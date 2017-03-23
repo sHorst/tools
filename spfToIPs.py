@@ -144,11 +144,11 @@ class QueryNew(query):
                 continue
 
             elif m == 'ip4':
-                ips.append(ipaddress.ip_network("%s/%s" % (arg, cidrlength)))
+                ips.append(ipaddress.ip_network("%s/%s" % (arg, cidrlength), False))
                 continue
 
             elif m == 'ip6':
-                ips.append(ipaddress.ip_network("%s/%s" % (arg, cidrlength)))
+                ips.append(ipaddress.ip_network("%s/%s" % (arg, cidrlength), False))
                 continue
 
             elif m == 'ptr':
