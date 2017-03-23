@@ -1,5 +1,5 @@
 
-from spf import AmbiguityWarning, query, RE_MODIFIER, PermError, RESULTS, socket, MAX_RECURSION, TempError
+from spf import AmbiguityWarning, query, RE_MODIFIER, PermError, MAX_RECURSION, TempError
 import ipaddress
 
 USAGE = """To convert spf to list of ips:
