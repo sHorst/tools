@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 from spf import AmbiguityWarning, query, RE_MODIFIER, PermError, MAX_RECURSION, TempError
 import ipaddress
