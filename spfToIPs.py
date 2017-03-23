@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from spf import AmbiguityWarning, query, RE_MODIFIER, PermError, MAX_RECURSION, TempError
+#from spf import AmbiguityWarning, query, RE_MODIFIER, PermError, MAX_RECURSION, TempError
+import spf
 import ipaddress
 
 USAGE = """To convert spf to list of ips:
@@ -9,26 +10,26 @@ USAGE = """To convert spf to list of ips:
 """
 
 
-class QueryNew(query):
+class QueryNew(spf.query):
     def __init__(self):
         super().__init__(i='127.0.0.1', s='ultrachaos.de', h='ultrachaos.de')
         pass
 
-    def get_ips1(self, spf, domain, recursion):
-        if recursion > MAX_RECURSION:
-            raise PermError('Too many levels of recursion')
+    def get_ips1(self, s, domain, recursion):
+        if recursion > spf.MAX_RECURSION:
+            raise spf.PermError('Too many levels of recursion')
         try:
             tmp, self.d = self.d, domain
             try:
-                return self.get_ips(spf, recursion)
+                return self.get_ips(s, recursion)
             finally:
                 self.d = tmp
-        except AmbiguityWarning as x:
+        except spf.AmbiguityWarning as x:
             if x.mech:
                 self.mech.append(x.mech)
             return []
 
-    def get_ips(self, spf, recursion):
+    def get_ips(self, s, recursion):
         """Get all IPs connected to this SPF Record.
 
         Returns (result, mta-status-code, explanation) where
@@ -37,25 +38,25 @@ class QueryNew(query):
 
         ips = []
 
-        if not spf:
+        if not s:
             return []
 
         # Split string by space, drop the 'v=spf1'.  Split by all whitespace
         # casuses things like carriage returns being treated as valid space
         # separators, so split() is not sufficient.
-        spf = spf.split(' ')
+        s = s.split(' ')
         # Catch case where SPF record has no spaces.
         # Can never happen with conforming dns_spf(), however
         # in the future we might want to give warnings
         # for common mistakes like IN TXT "v=spf1" "mx" "-all"
         # in relaxed mode.
-        if spf[0].lower() != 'v=spf1':
+        if s[0].lower() != 'v=spf1':
             return []
 
         # Just to make it even more fun, the relevant piece of the ABNF for
         # term separations is *( 1*SP ( directive / modifier ) ), so it's one
         # or more spaces, not just one.  So strip empty mechanisms.
-        spf = [mech for mech in spf[1:] if mech]
+        s = [mech for mech in s[1:] if mech]
 
         # copy of explanations to be modified by exp=
         redirect = None
@@ -69,8 +70,8 @@ class QueryNew(query):
         modifiers = []
         # Look for modifiers
         #
-        for mech in spf:
-            m = RE_MODIFIER.split(mech)[1:]
+        for mech in s:
+            m = spf.RE_MODIFIER.split(mech)[1:]
             if len(m) != 2:
                 mechs.append(self.validate_mechanism(mech))
                 continue
@@ -78,14 +79,14 @@ class QueryNew(query):
             mod, arg = m
             if mod in modifiers:
                 if mod == 'redirect':
-                    raise PermError('redirect= MUST appear at most once', mech)
+                    raise spf.PermError('redirect= MUST appear at most once', mech)
                 print('%s= MUST appear at most once' % mod, mech)
                 # just use last one in lax mode
             modifiers.append(mod)
             if mod == 'exp':
                 # always fetch explanation to check permerrors
                 if not arg:
-                    raise PermError('exp has empty domain-spec:', arg)
+                    raise spf.PermError('exp has empty domain-spec:', arg)
                 arg = self.expand_domain(arg)
                 if arg:
                     try:
@@ -99,7 +100,7 @@ class QueryNew(query):
                 self.check_lookups()
                 redirect = self.expand_domain(arg)
                 if not redirect:
-                    raise PermError('redirect has empty domain:', arg)
+                    raise spf.PermError('redirect has empty domain:', arg)
             elif mod == 'default':
                 # default modifier is obsolete
                 pass
@@ -161,7 +162,7 @@ class QueryNew(query):
                 # Catch redirect to a non-existant SPF record.
                 redirect_record = self.dns_spf(redirect)
                 if not redirect_record:
-                    raise PermError('redirect domain has no SPF record',
+                    raise spf.PermError('redirect domain has no SPF record',
                                     redirect)
                 # forget modifiers on redirect
                 if not recursion:
@@ -195,9 +196,9 @@ if __name__ == '__main__':
             ips = query.get_ips(query.dns_spf(argv[0]), True)
 
             print("\n".join(map(lambda x: str(x), ips)))
-        except TempError as x:
+        except spf.TempError as x:
             print("Temporary DNS error: ", x)
-        except PermError as x:
+        except spf.PermError as x:
             print("PermError: ", x)
     else:
         print(USAGE)
