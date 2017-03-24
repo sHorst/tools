@@ -27,9 +27,13 @@ def generate_whitelist(domainfile=None, ipfile=None, outputfile=None):
 
     if domainfile:
         for domain in domainfile:
-            domain = domain.strip("\n\r\I ")
+            # remove comment
+            domain = domain.partition('#')[0]
+            domain = domain.strip()
+
             if domain == '':
                 continue
+
 
             outputfile.write("# %s\n" % domain)
             try:
