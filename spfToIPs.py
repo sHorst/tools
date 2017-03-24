@@ -20,7 +20,7 @@ class QueryNew(spf.query):
         try:
             tmp, self.d = self.d, domain
             try:
-                return self.get_ips(s, recursion)
+                return self.get_ips(s=s, d=domain, recursion=recursion)
             finally:
                 self.d = tmp
         except spf.AmbiguityWarning as x:
@@ -28,19 +28,26 @@ class QueryNew(spf.query):
                 self.mech.append(x.mech)
             return []
 
-    def get_ips(self, domain, recursion):
+    def get_ips(self, d=None, recursion=True, s=None):
         """Get all IPs connected to this SPF Record.
 
         Returns (result, mta-status-code, explanation) where
         result in ['fail', 'unknown', 'pass', 'none']
         """
-        s = self.dns_spf(domain)
+
+        # load spf from dns, if not set
+        if not s:
+            s = self.dns_spf(d)
 
         ips = []
 
         if not s:
             # if we did not got any spf we return the ip of the mx
-            return self.dns_mx(domain)
+            self.A = 'A'
+            ips += map(lambda x: ipaddress.ip_address(x), self.dns_mx(d))
+            self.A = 'AAAA'
+            ips += map(lambda x: ipaddress.ip_address(x), self.dns_mx(d))
+            return ips
 
         # Split string by space, drop the 'v=spf1'.  Split by all whitespace
         # casuses things like carriage returns being treated as valid space
@@ -53,7 +60,11 @@ class QueryNew(spf.query):
         # in relaxed mode.
         if s[0].lower() != 'v=spf1':
             # if we did not got any spf we return the ip of the mx
-            return self.dns_mx(domain)
+            self.A = 'A'
+            ips += map(lambda x: ipaddress.ip_address(x), self.dns_mx(d))
+            self.A = 'AAAA'
+            ips += map(lambda x: ipaddress.ip_address(x), self.dns_mx(d))
+            return ips
 
         # Just to make it even more fun, the relevant piece of the ABNF for
         # term separations is *( 1*SP ( directive / modifier ) ), so it's one
@@ -164,8 +175,7 @@ class QueryNew(spf.query):
                 # Catch redirect to a non-existant SPF record.
                 redirect_record = self.dns_spf(redirect)
                 if not redirect_record:
-                    raise spf.PermError('redirect domain has no SPF record',
-                                    redirect)
+                    raise spf.PermError('redirect domain has no SPF record', redirect)
                 # forget modifiers on redirect
                 if not recursion:
                     self.exps = dict(self.defexps)

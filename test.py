@@ -85,6 +85,15 @@ class TestSpfToIPs(TestCase):
         self.assertEqual(len(ips) == 4, True, "does not have four element")
         self.assertListEqual(ips, _MockData.get_ips('ultrachaos.de'), "returned IPs are wrong")
 
+    def test_get_mx_aaaa_recurd(self):
+        self.query.A = 'AAAA'
+        ips = []
+        ips += map(lambda x: ip_address(x), self.query.dns_mx('ultrachaos.de'))
+
+        self.assertEqual(len(ips) == 1, True, "does have more than one element")
+        self.assertListEqual(ips, [ip_address('2a01:4f8:130:81a2:42::107')], "returned IP is wrong")
+
+
 
 class TestGenerateWhitelist(TestCase):
     def test_generate_whitelist(self):
