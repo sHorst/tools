@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-#from spf import AmbiguityWarning, query, RE_MODIFIER, PermError, MAX_RECURSION, TempError
 import spf
 import ipaddress
 
@@ -171,6 +170,18 @@ class QueryNew(spf.query):
 
         return ips
 
+    # overwrite with ignore void = True
+    def dns_a(self, domainname, A='A'):
+        """Get a list of IP addresses for a domainname.
+        """
+        if not domainname:
+            return []
+        # ignore empty dns requests
+        r = self.dns(domainname, A, ignore_void=True)
+        if A == 'AAAA' and bytes is str:
+            # work around pydns inconsistency plus python2 bytes/str ambiguity
+            return [ipaddress.Bytes(ip) for ip in r]
+        return r
 
 if __name__ == '__main__':
     import getopt
