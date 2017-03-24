@@ -8,7 +8,7 @@ USAGE = """To convert spf to list of ips:
     % python spfToIPs.py google.com
 """
 
-
+MAX_LOOKUP = 100
 class QueryNew(spf.query):
     def __init__(self):
         super().__init__(i='127.0.0.1', s='ultrachaos.de', h='ultrachaos.de')
@@ -28,17 +28,19 @@ class QueryNew(spf.query):
                 self.mech.append(x.mech)
             return []
 
-    def get_ips(self, s, recursion):
+    def get_ips(self, domain, recursion):
         """Get all IPs connected to this SPF Record.
 
         Returns (result, mta-status-code, explanation) where
         result in ['fail', 'unknown', 'pass', 'none']
         """
+        s = self.dns_spf(domain)
 
         ips = []
 
         if not s:
-            return []
+            # if we did not got any spf we return the ip of the mx
+            return self.dns_mx(domain)
 
         # Split string by space, drop the 'v=spf1'.  Split by all whitespace
         # casuses things like carriage returns being treated as valid space
@@ -50,7 +52,8 @@ class QueryNew(spf.query):
         # for common mistakes like IN TXT "v=spf1" "mx" "-all"
         # in relaxed mode.
         if s[0].lower() != 'v=spf1':
-            return []
+            # if we did not got any spf we return the ip of the mx
+            return self.dns_mx(domain)
 
         # Just to make it even more fun, the relevant piece of the ABNF for
         # term separations is *( 1*SP ( directive / modifier ) ), so it's one
@@ -183,6 +186,11 @@ class QueryNew(spf.query):
             return [ipaddress.Bytes(ip) for ip in r]
         return r
 
+    def check_lookups(self):
+        self.lookups = self.lookups + 1
+        if self.lookups > MAX_LOOKUP*4:
+            raise spf.PermError('More than %d DNS lookups' % (MAX_LOOKUP*4))
+
 if __name__ == '__main__':
     import getopt
     import sys
@@ -203,8 +211,9 @@ if __name__ == '__main__':
 
     elif len(argv) == 1:
         try:
+            domain = argv[0]
             query = QueryNew()
-            ips = query.get_ips(query.dns_spf(argv[0]), True)
+            ips = query.get_ips(domain, True)
 
             print("\n".join(map(lambda x: str(x), ips)))
         except spf.TempError as x:

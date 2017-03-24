@@ -34,7 +34,7 @@ def generate_whitelist(domainfile=None, ipfile=None, outputfile=None):
             outputfile.write("# %s\n" % domain)
             try:
                 query = QueryNew()
-                ips = query.get_ips(query.dns_spf(domain), True)
+                ips = query.get_ips(domain, True)
 
                 outputfile.write("\n".join(map(lambda x: str(x), ips)) + "\n\n")
             except TempError as x:

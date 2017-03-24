@@ -80,7 +80,7 @@ class TestSpfToIPs(TestCase):
         self.assertListEqual(ips, [ip_address('2a01:4f8:130:81a2:42::107')], "returned IP is wrong")
 
     def test_get_ip_from_spf(self):
-        ips = self.query.get_ips(self.query.dns_spf('ultrachaos.de'), True)
+        ips = self.query.get_ips('ultrachaos.de', True)
 
         self.assertEqual(len(ips) == 4, True, "does not have four element")
         self.assertListEqual(ips, _MockData.get_ips('ultrachaos.de'), "returned IPs are wrong")
