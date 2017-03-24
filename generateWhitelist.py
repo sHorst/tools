@@ -28,6 +28,8 @@ def generate_whitelist(domainfile=None, ipfile=None, outputfile=None):
     if domainfile:
         for domain in domainfile:
             domain = domain.strip("\n\r\I ")
+            if domain == '':
+                continue
 
             outputfile.write("# %s\n" % domain)
             try:
@@ -60,6 +62,33 @@ if __name__ == '__main__':
     if len(argv) == 0:
         print(USAGE)
 
+    elif len(argv) == 1:
+        (df_name) = argv
+        if not os.path.isfile(df_name):
+            print("domain File does not exists")
+            sys.exit(2)
+
+        df = open(df_name, 'r')
+
+        generate_whitelist(domainfile=df)
+
+        df.close()
+    elif len(argv) == 2:
+        (df_name, if_name) = argv
+        if not os.path.isfile(df_name):
+            print("domain File does not exists")
+            sys.exit(2)
+        if not os.path.isfile(if_name):
+            print("ip File does not exists")
+            sys.exit(2)
+
+        df = open(df_name, 'r')
+        ipf = open(if_name, 'r')
+
+        generate_whitelist(domainfile=df, ipfile=ipf)
+
+        df.close()
+        ipf.close()
     elif len(argv) == 3:
         (df_name, if_name, of_name) = argv
         if not os.path.isfile(df_name):

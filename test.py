@@ -99,7 +99,8 @@ class TestGenerateWhitelist(TestCase):
         of = StringIO()
 
         with patch("spfToIPs.QueryNew.get_ips", return_value=_MockData.get_ips('ultrachaos.de')):
-            generate_whitelist(df, ipf, of)
+            with patch("spfToIPs.QueryNew.dns_spf", return_value="v=spf1 mx a:www.ultrachaos.de ~all"):
+                generate_whitelist(df, ipf, of)
         of.seek(0)
 
         output = of.read()
