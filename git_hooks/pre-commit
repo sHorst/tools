@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import git
+import os
+
+GIT_REMOTES = {
+    "github.com:scoutnet": {
+        'email': 'muetze@scoutnet.de',
+        'signingkey': '7EDD2033'
+    },
+    "github.gcxi.de": {
+        'email': 'stefan.horst@grandcentrix.net',
+        'signingkey': 'stefan.horst@grandcentrix.net'
+    }
+}
+
+
+def set_identity(repo, entity):
+    cw = repo.config_writer()
+    if not cw.has_section(section='user'):
+        cw.add_section('user')
+
+    cw.set(section="user", option="email", value=entity['email'])
+    cw.set(section="user", option="signingkey", value=entity['signingkey'])
+
+    if not cw.has_section(section='commit'):
+        cw.add_section('commit')
+    cw.set(section="commit", option="gpgsign", value="true")
+
+    print("* set user email to %s" % entity['email'])
+
+
+def main():
+    try:
+        repository = git.Repo(os.getcwd())
+        if hasattr(repository.remotes, "origin"):
+            origin_url = repository.remotes.origin.url
+
+            for service in GIT_REMOTES:
+                if service in origin_url:
+                    set_identity(repository, GIT_REMOTES[service])
+                    break
+    except git.exc.InvalidGitRepositoryError:
+        exit(5)
+        pass
+
+if __name__ == "__main__":
+    main()
