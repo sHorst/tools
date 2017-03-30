@@ -8,6 +8,14 @@ GIT_REMOTES = {
         'email': 'muetze@scoutnet.de',
         'signingkey': '7EDD2033'
     },
+    "github.com:sHorst": {
+        'email': 'stefan@ultrachaos.de',
+        'signingkey': 'stefan@ultrachaos.de'
+    },
+    "github.com:grandcentrix": {
+        'email': 'stefan.horst@grandcentrix.net',
+        'signingkey': 'stefan.horst@grandcentrix.net'
+    }
     "github.gcxi.de": {
         'email': 'stefan.horst@grandcentrix.net',
         'signingkey': 'stefan.horst@grandcentrix.net'
