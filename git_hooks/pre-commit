@@ -15,7 +15,7 @@ GIT_REMOTES = {
     "github.com:grandcentrix": {
         'email': 'stefan.horst@grandcentrix.net',
         'signingkey': 'stefan.horst@grandcentrix.net'
-    }
+    },
     "github.gcxi.de": {
         'email': 'stefan.horst@grandcentrix.net',
         'signingkey': 'stefan.horst@grandcentrix.net'
