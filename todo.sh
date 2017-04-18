@@ -3,8 +3,8 @@
 pushd ~/Library/Calendars > /dev/null
 
 if [ -e /tmp/todo ]; then
-	filenames=$(find . -newer /tmp/todo -exec grep -rlI VTODO {} \+)
-	if [ -n $filenames ]; then
+	nr_files=$(find . -newer /tmp/todo -exec grep -rlI VTODO {} \+ | wc -l)
+	if [ $nr_files == 0 ]; then
 		cat /tmp/todo
 		exit
 	fi
