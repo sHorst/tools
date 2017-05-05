@@ -143,7 +143,6 @@ class QueryNew(spf.query):
                 continue
 
             elif m == 'a':
-                print(arg)
                 self.check_lookups()
                 ips += map(lambda x: ipaddress.ip_address(x), self.dns_a(arg, 'A'))
                 ips += map(lambda x: ipaddress.ip_address(x), self.dns_a(arg, 'AAAA'))
