@@ -10,8 +10,8 @@ USAGE = """To convert spf to list of ips:
 
 MAX_LOOKUP = 100
 class QueryNew(spf.query):
-    def __init__(self):
-        super().__init__(i='127.0.0.1', s='ultrachaos.de', h='ultrachaos.de')
+    def __init__(self, i='127.0.0.1', s='ultrachaos.de', h='ultrachaos.de'):
+        super().__init__(i=i, s=s, h=h)
         pass
 
     def get_ips1(self, s, domain, recursion):
@@ -143,6 +143,7 @@ class QueryNew(spf.query):
                 continue
 
             elif m == 'a':
+                print(arg)
                 self.check_lookups()
                 ips += map(lambda x: ipaddress.ip_address(x), self.dns_a(arg, 'A'))
                 ips += map(lambda x: ipaddress.ip_address(x), self.dns_a(arg, 'AAAA'))
@@ -222,7 +223,7 @@ if __name__ == '__main__':
     elif len(argv) == 1:
         try:
             domain = argv[0]
-            query = QueryNew()
+            query = QueryNew(s=domain, h=domain)
             ips = query.get_ips(domain, True)
 
             print("\n".join(map(lambda x: str(x), ips)))

@@ -37,7 +37,7 @@ def generate_whitelist(domainfile=None, ipfile=None, outputfile=None):
 
             outputfile.write("# %s\n" % domain)
             try:
-                query = QueryNew()
+                query = QueryNew(s=domain, h=domain)
                 ips = query.get_ips(domain, True)
 
                 outputfile.write("\n".join(map(lambda x: str(x), ips)) + "\n\n")
